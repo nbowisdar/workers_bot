@@ -1,0 +1,13 @@
+venv
+test.py
+.idea
+src/telegram/.env
+src/__pycache__/
+src/telegram/__pycache__/
+src/telegram/handlers/__pycache__/
+src/telegram/keyboards/__pycache__/
+src/database/data.db
+src/database/__pycache__/tables.cpython-310.pyc
+data.db
+src/database/__pycache__/queries.cpython-310.pyc
+src/telegram/handlers/fsm_handlers/__pycache__/
