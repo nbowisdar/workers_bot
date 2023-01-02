@@ -65,7 +65,7 @@ async def update_worker(message: Message, state: FSMContext):
     try:
         await check_access(message)
         await state.set_state(UpdateWorker.worker_id)
-        await message.reply("Введіть id працівника інформацію котрого бажаєте оновити:",reply_markup=cancel_kb)
+        await message.reply("Введіть id працівника інформацію котрого бажаєте оновити:", reply_markup=cancel_kb)
     except:
         logger.error(f'User {message.from_user.id} tried use admin panel!')
 
@@ -103,27 +103,29 @@ async def get_worker_info(message: Message, state: FSMContext):
         logger.error(f'User {message.from_user.id} tried use admin panel!')
 
 
-@admin_router.message((F.text.lower() == "позиції") & (F.from_user.id.in_(admins_hip)))
-#@admin_router.message(Text(text="позиції"))
+@admin_router.message((F.text == "Посади") & (F.from_user.id.in_(admins_hip)))
 async def position(message: Message):
     await check_access(message)
-    await message.answer("Розділ: *Позиції*",
+    await message.answer("Розділ: *Посади*",
                          reply_markup=admin_kb_pos)
 
 
-@admin_router.message((F.text == "Усі позиції") & (F.from_user.id.in_(admins_hip)))
+@admin_router.message((F.text == "Усі посади") & (F.from_user.id.in_(admins_hip)))
 async def show_pos(message: Message):
     all_pos = get_all_position()
+    if not all_pos:
+        await message.answer("Ви ще не створили не однієї посади", reply_markup=admin_kb_pos)
+        return
     msg = msg_with_positions(all_pos)
     await message.answer(msg, reply_markup=admin_kb_pos, parse_mode="MARKDOWN")
 
 
-@admin_router.message((F.text.lower() == "Створити нову позицію") & (F.from_user.id.in_(admins_hip)))
+@admin_router.message((F.text == "Створити нову посаду") & (F.from_user.id.in_(admins_hip)))
 async def create_pos(message: Message, state: FSMContext):
     try:
         await check_access(message)
         await state.set_state(PositionState.name)
-        await message.answer("Введіть назву професії", reply_markup=cancel_kb)
+        await message.answer("Введіть назву посади", reply_markup=cancel_kb)
     except:
         logger.error(f'User {message.from_user.id} tried use admin panel!')
 

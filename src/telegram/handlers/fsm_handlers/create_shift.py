@@ -66,7 +66,7 @@ async def set_night(message: Message, state: FSMContext):
 @admin_router.message(Shift.date)
 async def process_simple_calendar(message: Message, state: FSMContext):
     try:
-        if message.text.lower() == "Сьогоднішня дата":
+        if message.text == "Сьогоднішня дата":
             cur_date = date.today()#.strftime("%Y/%m/%d")
         else:
             cur_date = datetime.strptime(message.text, "%Y/%m/%d").date()
@@ -77,7 +77,7 @@ async def process_simple_calendar(message: Message, state: FSMContext):
                             reply_markup=admin_kb_main)
     except Exception as err:
         logger.error(err)
-        await message.reply("Не вірний формат!",
+        await message.reply("Не вірний формат! Або зміна вже існує",
                             reply_markup=admin_kb_main)
     finally:
         await state.clear()

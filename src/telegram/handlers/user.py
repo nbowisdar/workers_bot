@@ -6,7 +6,7 @@ from src.database import get_user
 from src.telegram.handlers.fsm_handlers.show_wage_by_month import UserDate
 from src.telegram.keyboards import start_kb, user_main_kb, user_emp_date, user_information, choose_information_btn, \
     get_years_kb
-from src.telegram.messages import generate_message_with_user_info, generate_message_with_emp_date, generate_message_with_information, generate_message_general_information
+from src.telegram.messages import generate_message_with_user_info, generate_message_with_information, generate_message_general_information
 from src.telegram.setup import user_router
 
 

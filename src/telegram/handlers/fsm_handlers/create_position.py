@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from src.database import get_all_workers_id, create_position
 from src.schema import PositionModel
-from src.telegram.keyboards import admin_kb_main
+from src.telegram.keyboards import admin_kb_main, admin_kb_pos
 from src.telegram.setup import admin_router
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
@@ -83,5 +83,5 @@ async def save_data(message: Message, data: PositionModel):
                          f"KPI: *{data['kpi']}*\n"
                          f"Оплата день: *{data['wage_day']}* грн.\n"
                          f"Оплата ніч: *{data['wage_night']}* грн.",
-                         reply_markup=admin_kb_main,
+                         reply_markup=admin_kb_pos,
                          parse_mode="MARKDOWN")

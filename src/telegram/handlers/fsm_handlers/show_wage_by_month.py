@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
@@ -33,8 +35,9 @@ async def set_year(message: Message, state: FSMContext):
 
 
 async def _handle_data(data: dict, message: Message):
+    month_text = data["month"]
     data["month"] = get_num_month(data["month"])
-    wage_info = get_wage_data_by_month(YearMonth(**data))
+    wage_info = get_wage_data_by_month(YearMonth(**data), month_text)
     msg = build_month_wage_message(wage_info)
-    await message.answer(msg, reply_markup=user_main_kb)
+    await message.answer(msg, reply_markup=user_main_kb, parse_mode="HTML")
 

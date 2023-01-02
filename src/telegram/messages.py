@@ -1,19 +1,19 @@
+from pprint import pprint
+
 from src.schema import UserModel, ShiftModel, PluralShifts, PositionModel
 from src.database import get_all_workers
 
 
 def generate_message_with_user_info(user: UserModel) -> str:
     msg = f"""
-{user['name']}  {user['surname']}      
-id - {user['worker_id']} \n
-{user['tag']}
-{user['phone']}
-{user['email']} \n
-Відділ - {user['department']}
-Посада - {user['position']}
-Статус - {user['status']} 
-Дата працевлаштування - {user['employment_date']} \n
-Нотатка - {user['note']}
+            {user['name']}  {user['surname']}
+            id - {user['worker_id']}
+            Телефон - {user['phone']}
+            Пошта - {user['email']}
+            Відділ - {user['department']}
+            Посада - {user['position']['name']}
+            Статус - {user['status']} 
+            Дата працевлаштування - {user['employment_date']}
             """
     return msg
 
@@ -23,7 +23,6 @@ def generate_message_with_emp_date(user: UserModel) -> str:
 123
             """
     return msg
-
 
 
 def generate_message_with_information(user: UserModel) -> str:
@@ -77,10 +76,19 @@ def message_with_all_users(users: list[UserModel]) -> str:
         return "У вас ще немає працівників"
     return "Усі працівники:\n" + msg
 
+"""СЕРПЕНЬ - Ляхов Ілля Михайлович
+94,5 денних годин х 90,13= 8517,29грн
+49,5 нічних годин × 102,64 = 5080,68грн
+В сумі 13597,97, з яких 70% до оплати - 9518,58грн та 30% КПІ - 4079,39грн"""
 
-def build_month_wage_message(wage_info) -> str:
-    msg = "ok"
-    ...
+
+def build_month_wage_message(info: PluralShifts) -> str:
+    msg = f"{info['date'].capitalize()} - {info['full_name']} \n" \
+          f"{info['days_hours']} денних годин * {info['wage_day']} = {info['days_hours']*info['wage_day']}\n" \
+          f"{info['days_hours']} нічних годин * {info['wage_night']} = {info['days_hours']*info['wage_night']}\n" \
+          f"В сумі <b>{info['earned']} грн.</b> з яких:\n" \
+          f"70% до оплати - <b>{round(info['earned']/100*70, 2)} грн.</b>" \
+          f" та 30% КПІ - <b>{round(info['earned']/100*30, 2)} грн.</b>"
     return msg
 
 

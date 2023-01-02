@@ -5,7 +5,8 @@ from aiogram.filters import Text
 from aiogram3_calendar import SimpleCalendar
 from src.schema import WorkerAndBtn
 from src.telegram.handlers.fsm_handlers import TimePer, OneDay
-from src.telegram.keyboards import start_kb, choose_time_btn, user_main_kb, admin_kb_main, today_btn, user_emp_date, user_information
+from src.telegram.keyboards import start_kb, choose_time_btn, user_main_kb, admin_kb_main, today_btn, user_emp_date, \
+    user_information, cancel_kb
 from src.database import get_user, get_one_shift, get_shifts
 from src.telegram.messages import generate_message_with_user_info, message_about_one_shift, generate_message_with_emp_date, generate_message_with_information
 from src.telegram.handlers.admin import admins
@@ -36,7 +37,7 @@ async def choose_time(message: Message):
 async def one_day_stat(message: Message, state: FSMContext):
     if is_admin(message.from_user.id):
         await state.set_state(OneDay.worker_id)
-        await message.answer("Введіть id працівника:")
+        await message.answer("Введіть id працівника:", reply_markup=cancel_kb)
         await state.update_data(is_admin=True)
         await state.update_data(reply_btn=admin_kb_main)
 
@@ -56,7 +57,7 @@ async def one_day_stat(message: Message, state: FSMContext):
 async def period_stat(message: Message, state: FSMContext):
     if is_admin(message.from_user.id):
         await state.set_state(TimePer.worker_id)
-        await message.answer("Введіть id працівника:")
+        await message.answer("Введіть id працівника:", reply_markup=cancel_kb)
         await state.update_data(is_admin=True)
         await state.update_data(reply_btn=admin_kb_main)
 

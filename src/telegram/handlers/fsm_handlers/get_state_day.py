@@ -22,7 +22,6 @@ class OneDay(StatesGroup):
     date = State()
 
 
-
 @common_router.message(OneDay.worker_id)
 async def is_admin_or_user(message: Message, state: FSMContext):
     try:
@@ -44,7 +43,7 @@ async def is_admin_or_user(message: Message, state: FSMContext):
 @common_router.message(OneDay.date)
 async def from_time(message: Message, state: FSMContext):
     try:
-        if message.text.lower() == "сьогоднішня дата":
+        if message.text == "Сьогоднішня дата":
             cur_date = date.today()
         else:
             cur_date = datetime.strptime(message.text, "%Y/%m/%d").date()

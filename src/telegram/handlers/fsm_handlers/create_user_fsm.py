@@ -103,6 +103,9 @@ async def set_tag(message: Message, state: FSMContext):
 def get_pos_kb():
     positions = get_all_position()
     builder = KeyboardBuilder(button_type=KeyboardButton)
+    if not positions:
+        builder.button(text="Зпочатку створіть хочаб одну посаду!")
+        return builder.as_markup()
     for pos in positions:
         builder.add(KeyboardButton(text=f"{pos['name']}"))
     builder.adjust(4)
@@ -119,6 +122,12 @@ async def set_department(message: Message, state: FSMContext):
 
 @admin_router.message(CreateWorker.position)
 async def set_position(message: Message, state: FSMContext):
+    # check if user don't tap button
+    positions = get_all_position()
+    if message.text not in [pos['name'] for pos in positions]:
+        await state.clear()
+        await message.answer("Помилка! Такої позиції не існує!", reply_markup=admin_kb_main)
+        return
     await state.update_data(position=message.text)
     await state.set_state(CreateWorker.status)
     await message.reply("Статус працівника:",

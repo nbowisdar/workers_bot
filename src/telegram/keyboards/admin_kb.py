@@ -4,7 +4,7 @@ kb1 = [
     [KeyboardButton(text="Показати всіх"), KeyboardButton(text="Детальніше про працівника")],
     [KeyboardButton(text="Додати нову зміну"), KeyboardButton(text="Видалити працівника")],
     [KeyboardButton(text="Додати нового працівника"),KeyboardButton(text="Оновити інфармацію про працівника")],
-    [KeyboardButton(text="Позиції")],
+    [KeyboardButton(text="Посади")],
 ]
 
 admin_kb_main = ReplyKeyboardMarkup(
@@ -13,8 +13,8 @@ admin_kb_main = ReplyKeyboardMarkup(
 )
 
 kb1_1 = [
-    [KeyboardButton(text="Усі позиції"), KeyboardButton(text="Оновити позицію")],
-    [KeyboardButton(text="Створити нову позицію")],
+    [KeyboardButton(text="Усі посади"), KeyboardButton(text="Оновити посаду")],
+    [KeyboardButton(text="Створити нову посаду")],
     [KeyboardButton(text="На головну")]
 ]
 

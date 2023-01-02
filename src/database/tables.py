@@ -39,7 +39,7 @@ class WorkShift(BaseModel):
     worker = ForeignKeyField(Worker, backref='shifts', on_delete='CASCADE')
     day_hours = FloatField()
     night_hours = FloatField()
-    date = DateField()
+    date = DateField(unique=True)
 
 
 def create_db():

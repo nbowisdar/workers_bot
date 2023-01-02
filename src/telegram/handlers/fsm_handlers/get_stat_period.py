@@ -81,7 +81,7 @@ async def from_time(message: Message, state: FSMContext):
 async def set_until_time(message: Message, state: FSMContext):
     data = await state.get_data()
     try:
-        if message.text.lower() == "сьогоднішня дата":
+        if message.text == "Сьогоднішня дата":
             cur_date = date.today()
         else:
             cur_date = datetime.strptime(message.text, "%Y/%m/%d").date()
