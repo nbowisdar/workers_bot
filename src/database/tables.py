@@ -5,11 +5,20 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent.parent
 db = SqliteDatabase(BASE_DIR / 'data.db')
 
-#база даних пыдключаэться тут
+# база даних пыдключаэться тут
+
 
 class BaseModel(Model):
     class Meta:
         database = db
+
+
+class Position(BaseModel):
+    name = CharField()
+    kpi = FloatField(null=True)
+    skill = FloatField()
+    wage_day = FloatField()
+    wage_night = FloatField()
 
 
 class Worker(BaseModel):
@@ -20,14 +29,10 @@ class Worker(BaseModel):
     email = CharField()
     tag = TextField()
     department = CharField()
-    position = CharField()
     status = CharField()
-    kpi = FloatField()
-    skill = FloatField()
-    wage_day = FloatField()
-    wage_night = FloatField()
     note = TextField()
     employment_date = DateField()
+    position = ForeignKeyField(Position, backref="workers")
 
 
 class WorkShift(BaseModel):
@@ -35,6 +40,7 @@ class WorkShift(BaseModel):
     day_hours = FloatField()
     night_hours = FloatField()
     date = DateField()
+
 
 
 def create_db():

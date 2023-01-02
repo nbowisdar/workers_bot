@@ -1,5 +1,7 @@
 venv
+src/.env
 test.py
+src/database/__pycache__/__init__.cpython-310.pyc
 .idea
 src/telegram/.env
 src/__pycache__/

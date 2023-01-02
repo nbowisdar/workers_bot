@@ -34,13 +34,19 @@ class UserModel(TypedDict):
     department: str
     position: str
     status: str
-    kpi: float
-    skill: float
     employment_date: str
-    wage_day: float
-    wage_night: float
+
     note: str
     shifts: list[ShiftModel] | None
+
+
+class PositionModel(TypedDict):
+    name: str
+    kpi: float
+    skill: float
+    wage_day: float
+    wage_night: float
+    workers: list[UserModel] | None
 
 
 class TimePerModel(NamedTuple):

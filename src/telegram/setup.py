@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-
+print(TOKEN)
 bot = Bot(token=TOKEN)
 
 # create routers
