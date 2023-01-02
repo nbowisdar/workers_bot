@@ -32,10 +32,10 @@ class UserModel(TypedDict):
     email: str
     tag: str
     department: str
-    position: str
+    # position: str
     status: str
     employment_date: str
-
+    skill: float
     note: str
     shifts: list[ShiftModel] | None
 
@@ -43,7 +43,6 @@ class UserModel(TypedDict):
 class PositionModel(TypedDict):
     name: str
     kpi: float
-    skill: float
     wage_day: float
     wage_night: float
     workers: list[UserModel] | None

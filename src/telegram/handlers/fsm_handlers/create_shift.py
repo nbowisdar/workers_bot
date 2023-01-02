@@ -10,12 +10,12 @@ from src.my_logger import logger
 from src.database import get_all_workers_id
 from datetime import datetime, date
 
+
 class Shift(StatesGroup):
     worker_id = State()
     day_hours = State()
     night_hours = State()
     date = State()
-
 
 
 @admin_router.message(Shift.worker_id)

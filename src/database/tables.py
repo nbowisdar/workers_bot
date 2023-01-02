@@ -16,7 +16,6 @@ class BaseModel(Model):
 class Position(BaseModel):
     name = CharField()
     kpi = FloatField(null=True)
-    skill = FloatField()
     wage_day = FloatField()
     wage_night = FloatField()
 
@@ -32,6 +31,7 @@ class Worker(BaseModel):
     status = CharField()
     note = TextField()
     employment_date = DateField()
+    skill = FloatField()
     position = ForeignKeyField(Position, backref="workers")
 
 
@@ -40,7 +40,6 @@ class WorkShift(BaseModel):
     day_hours = FloatField()
     night_hours = FloatField()
     date = DateField()
-
 
 
 def create_db():
