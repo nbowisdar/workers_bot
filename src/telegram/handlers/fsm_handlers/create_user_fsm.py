@@ -133,69 +133,12 @@ async def set_status(message: Message, state: FSMContext):
                         reply_markup=cancel_kb)
 
 
-# @admin_router.message(CreateWorker.kpi)
-# async def set_kpi(message: Message, state: FSMContext):
-#     await state.update_data(kpi=message.text)
-#     await state.set_state(CreateWorker.skill)
-#     await message.reply("Вкажіть рівень навичок робітника:",
-#                         reply_markup=cancel_kb)
-
-# @admin_router.message(CreateWorker.skill)
-# async def set_skill(message: Message, state: FSMContext):
-#     await state.update_data(skill=message.text)
-#     await state.set_state(CreateWorker.employment_date)
-#     await message.reply("Дата працевлаштування:",
-#                         reply_markup=cancel_kb)
-
-
 @admin_router.message(CreateWorker.employment_date)
 async def set_employment_date(message: Message, state: FSMContext):
     await state.update_data(employment_date=message.text)
     await state.set_state(CreateWorker.note)
     await message.reply("Нотатка:",
                         reply_markup=cancel_kb)
-#
-# @admin_router.message(CreateWorker.wage_day)
-# async def set_wage_day(message: Message, state: FSMContext):
-#     await state.update_data(wage_day=message.text)
-#     await state.set_state(CreateWorker.wage_night)
-#     await message.reply("Ставка за нічні години:",
-#                         reply_markup=cancel_kb)
-#
-#
-# @admin_router.message(CreateWorker.wage_night)
-# async def set_wage_night(message: Message, state: FSMContext):
-#     await state.update_data(wage_night=message.text)
-#     await state.set_state(CreateWorker.note)
-#     await message.reply("Нотатка:",
-#                         reply_markup=cancel_kb)
-
-
-'''
-@admin_router.message(CreateWorker.wage_day)
-async def set_wage_day(message: Message, state: FSMContext):
-    try:
-        await state.update_data(wage_day=message.text)
-
-    except ValueError:
-        await message.reply("Невірне значення,\n"
-                            "Наприклад: 50.5 або 50", reply_markup=admin_kb_main)
-        await state.clear()
-        await state.set_state(CreateWorker.wage_night)
-        await message.reply("Ставка за нічні години:",
-                        reply_markup=cancel_kb)
-
-@admin_router.message(CreateWorker.wage_night)
-async def set_wage_night(message: Message, state: FSMContext):
-    try:
-        await state.update_data(wage_night=message.text)
-
-    except ValueError:
-        await message.reply("Невірне значення,\n"
-                            "Наприклад: 50.5 або 50", reply_markup=admin_kb_main)
-        await state.clear()
-
-'''
 
 
 @admin_router.message(CreateWorker.note)

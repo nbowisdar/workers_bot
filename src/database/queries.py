@@ -106,7 +106,7 @@ def update_user(user_new_data: UserModel):
     user.email = user_new_data['email']
     user.tag = user_new_data['tag']
     user.department = user_new_data['department']
-    #user.position = user_new_data['position']
+    user.position = user_new_data['position']
     user.status = user_new_data['status']
     #user.kpi = user_new_data['kpi']
     user.skill = user_new_data['skill']

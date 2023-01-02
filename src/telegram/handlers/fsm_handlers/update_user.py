@@ -3,8 +3,10 @@ from pprint import pprint
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+
+from src.telegram.handlers.fsm_handlers.create_user_fsm import get_pos_kb
 from src.telegram.keyboards import next_kb
-from src.database import create_worker, get_user, update_user
+from src.database import create_worker, get_user, update_user, get_pos_by_name
 from src.schema import UserModel
 from src.telegram.keyboards import admin_kb_main
 from src.telegram.setup import admin_router
@@ -21,10 +23,10 @@ class UpdateWorker(StatesGroup):
     department = State()
     position = State()
     status = State()
-    kpi = State()
+    #kpi = State()
     skill = State()
-    wage_day = State()
-    wage_night = State()
+    #wage_day = State()
+    #wage_night = State()
     note = State()
     employment_date = State()
 
@@ -128,8 +130,8 @@ async def set_department(message: Message, state: FSMContext):
     await state.set_state(UpdateWorker.position)
 
     await message.reply("Вкажіть нову посаду: \n"
-                        f"Попереднє значення - {user['position']}",
-                        reply_markup=next_kb)
+                        f"Попереднє значення - {user['position']['name']}",
+                        reply_markup=get_pos_kb())
 
 
 @admin_router.message(UpdateWorker.position)
@@ -145,7 +147,7 @@ async def set_position(message: Message, state: FSMContext):
                         f"Попереднє значення - {user['status']}",
                         reply_markup=next_kb)
 
-#
+
 @admin_router.message(UpdateWorker.status)
 async def set_status(message: Message, state: FSMContext):
     user = await get_user_from_state(state)
@@ -153,21 +155,6 @@ async def set_status(message: Message, state: FSMContext):
         await state.update_data(status=user['status'])
     else:
         await state.update_data(status=message.text)
-    await state.set_state(UpdateWorker.kpi)
-
-    await message.reply("Вкажіть новий КПІ: \n"
-                        f"Попереднє значення - {user['kpi']}",
-                        reply_markup=next_kb)
-#
-
-
-@admin_router.message(UpdateWorker.kpi)
-async def set_kpi(message: Message, state: FSMContext):
-    user = await get_user_from_state(state)
-    if message.text.lower() == "далі (залишити як є)":
-        await state.update_data(kpi=user['kpi'])
-    else:
-        await state.update_data(kpi=message.text)
     await state.set_state(UpdateWorker.skill)
 
     await message.reply("Вкажіть рівень навичок працівника: \n"
@@ -177,6 +164,7 @@ async def set_kpi(message: Message, state: FSMContext):
 
 @admin_router.message(UpdateWorker.skill)
 async def set_skill(message: Message, state: FSMContext):
+    #try:
     user = await get_user_from_state(state)
     if message.text.lower() == "далі (залишити як є)":
         await state.update_data(skill=user['skill'])
@@ -189,7 +177,6 @@ async def set_skill(message: Message, state: FSMContext):
                         reply_markup=next_kb)
 
 
-
 @admin_router.message(UpdateWorker.employment_date)
 async def set_employment_date(message: Message, state: FSMContext):
     user = await get_user_from_state(state)
@@ -197,43 +184,11 @@ async def set_employment_date(message: Message, state: FSMContext):
         await state.update_data(employment_date=user['employment_date'])
     else:
         await state.update_data(employment_date=message.text)
-    await state.set_state(UpdateWorker.wage_day)
+    await state.set_state(UpdateWorker.note)
 
-    await message.reply("Оновити денну ставку:\n"
-                        f"Попереднє значення - {user['wage_day']}",
+    await message.reply("Оновити нотатку:\n"
+                        f"Попереднє значення - {user['note']}",
                         reply_markup=next_kb)
-
-
-@admin_router.message(UpdateWorker.wage_day)
-async def set_wage_day(message: Message, state: FSMContext):
-    user = await get_user_from_state(state)
-    if message.text.lower() == "далі (залишити як є)":
-        await state.update_data(wage_day=user['wage_day'])
-    else:
-        await state.update_data(wage_day=message.text)
-    await state.set_state(UpdateWorker.wage_night)
-
-    await message.reply("Оновити нічну ставку: \n"
-                        f"Попереднє значення - {user['wage_night']}",
-                        reply_markup=next_kb)
-
-
-
-@admin_router.message(UpdateWorker.wage_night)
-async def set_wage_night(message: Message, state: FSMContext):
-    try:
-        user = await get_user_from_state(state)
-        if message.text.lower() == "далі (залишити як є)":
-            await state.update_data(wage_night=user['wage_night'])
-        else:
-            await state.update_data(wage_night=float(message.text))
-        await state.set_state(UpdateWorker.note)
-        await message.reply("Додаткова інформація (якщо нема то поставте \".\")?",
-                            reply_markup=next_kb)
-    except ValueError:
-        await message.reply("Невірне значення,\n"
-                            "Наприклад: 50.5 або 50", reply_markup=admin_kb_main)
-        await state.clear()
 
 
 @admin_router.message(UpdateWorker.note)
@@ -250,6 +205,7 @@ async def set_note(message: Message, state: FSMContext):
 
 async def save_data(message: Message, data: dict):
     # data['day_plus_night'] = data['day'] + data['night']
+    data["position"] = get_pos_by_name(data["position"])
     user = UserModel(**data)
     update_user(user)
 
