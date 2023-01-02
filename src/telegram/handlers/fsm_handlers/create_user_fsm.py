@@ -1,12 +1,15 @@
+from pprint import pprint
+
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, KeyboardButton
 from src.telegram.keyboards import cancel_kb
-from src.database import create_worker, get_all_workers_id
+from src.database import create_worker, get_all_workers_id, get_all_position, get_pos_by_name
 from src.schema import UserModel
 from src.telegram.keyboards import admin_kb_main
 from src.telegram.setup import admin_router
 from aiogram.filters import Text
+from aiogram.utils.keyboard import KeyboardBuilder
 
 
 class CreateWorker(StatesGroup):
@@ -19,10 +22,10 @@ class CreateWorker(StatesGroup):
     department = State()
     position = State()
     status = State()
-    kpi = State()
+    #kpi = State()
     skill = State()
-    wage_day = State()
-    wage_night = State()
+    #wage_day = State()
+    #wage_night = State()
     note = State()
     employment_date = State()
 
@@ -80,7 +83,6 @@ async def set_phone(message: Message, state: FSMContext):
                         reply_markup=cancel_kb)
 
 
-
 @admin_router.message(CreateWorker.email)
 async def set_email(message: Message, state: FSMContext):
     await state.update_data(email=message.text)
@@ -97,12 +99,22 @@ async def set_tag(message: Message, state: FSMContext):
                         reply_markup=cancel_kb)
 
 
+# create keyboards with relevant positions
+def get_pos_kb():
+    positions = get_all_position()
+    builder = KeyboardBuilder(button_type=KeyboardButton)
+    for pos in positions:
+        builder.add(KeyboardButton(text=f"{pos['name']}"))
+    builder.adjust(4)
+    return builder.as_markup(resize_keyboard=True)
+
+
 @admin_router.message(CreateWorker.department)
 async def set_department(message: Message, state: FSMContext):
     await state.update_data(department=message.text)
     await state.set_state(CreateWorker.position)
     await message.reply("Посада:",
-                        reply_markup=cancel_kb)
+                        reply_markup=get_pos_kb())
 
 
 @admin_router.message(CreateWorker.position)
@@ -116,50 +128,47 @@ async def set_position(message: Message, state: FSMContext):
 @admin_router.message(CreateWorker.status)
 async def set_status(message: Message, state: FSMContext):
     await state.update_data(status=message.text)
-    await state.set_state(CreateWorker.kpi)
-    await message.reply("Вкажіть КПІ працівника:",
-                        reply_markup=cancel_kb)
-
-
-@admin_router.message(CreateWorker.kpi)
-async def set_kpi(message: Message, state: FSMContext):
-    await state.update_data(kpi=message.text)
-    await state.set_state(CreateWorker.skill)
-    await message.reply("Вкажіть рівень навичок робітника:",
-                        reply_markup=cancel_kb)
-
-@admin_router.message(CreateWorker.skill)
-async def set_skill(message: Message, state: FSMContext):
-    await state.update_data(skill=message.text)
     await state.set_state(CreateWorker.employment_date)
     await message.reply("Дата працевлаштування:",
                         reply_markup=cancel_kb)
 
 
+# @admin_router.message(CreateWorker.kpi)
+# async def set_kpi(message: Message, state: FSMContext):
+#     await state.update_data(kpi=message.text)
+#     await state.set_state(CreateWorker.skill)
+#     await message.reply("Вкажіть рівень навичок робітника:",
+#                         reply_markup=cancel_kb)
 
+# @admin_router.message(CreateWorker.skill)
+# async def set_skill(message: Message, state: FSMContext):
+#     await state.update_data(skill=message.text)
+#     await state.set_state(CreateWorker.employment_date)
+#     await message.reply("Дата працевлаштування:",
+#                         reply_markup=cancel_kb)
 
 
 @admin_router.message(CreateWorker.employment_date)
 async def set_employment_date(message: Message, state: FSMContext):
     await state.update_data(employment_date=message.text)
-    await state.set_state(CreateWorker.wage_day)
-    await message.reply("Ставка за денні години:",
-                        reply_markup=cancel_kb)
-
-@admin_router.message(CreateWorker.wage_day)
-async def set_wage_day(message: Message, state: FSMContext):
-    await state.update_data(wage_day=message.text)
-    await state.set_state(CreateWorker.wage_night)
-    await message.reply("Ставка за нічні години:",
-                        reply_markup=cancel_kb)
-
-
-@admin_router.message(CreateWorker.wage_night)
-async def set_wage_night(message: Message, state: FSMContext):
-    await state.update_data(wage_night=message.text)
     await state.set_state(CreateWorker.note)
     await message.reply("Нотатка:",
                         reply_markup=cancel_kb)
+#
+# @admin_router.message(CreateWorker.wage_day)
+# async def set_wage_day(message: Message, state: FSMContext):
+#     await state.update_data(wage_day=message.text)
+#     await state.set_state(CreateWorker.wage_night)
+#     await message.reply("Ставка за нічні години:",
+#                         reply_markup=cancel_kb)
+#
+#
+# @admin_router.message(CreateWorker.wage_night)
+# async def set_wage_night(message: Message, state: FSMContext):
+#     await state.update_data(wage_night=message.text)
+#     await state.set_state(CreateWorker.note)
+#     await message.reply("Нотатка:",
+#                         reply_markup=cancel_kb)
 
 
 '''
@@ -199,6 +208,7 @@ async def set_note(message: Message, state: FSMContext):
 
 async def save_data(message: Message, data: dict):
     # data['day_plus_night'] = data['day'] + data['night']
+    data["position"] = get_pos_by_name(data["position"])
     user = UserModel(**data)
     create_worker(user)
 

@@ -14,7 +14,7 @@ class BaseModel(Model):
 
 
 class Position(BaseModel):
-    name = CharField()
+    name = CharField(unique=True)
     kpi = FloatField(null=True)
     wage_day = FloatField()
     wage_night = FloatField()
@@ -31,7 +31,7 @@ class Worker(BaseModel):
     status = CharField()
     note = TextField()
     employment_date = DateField()
-    skill = FloatField()
+    skill = FloatField(default=0)
     position = ForeignKeyField(Position, backref="workers")
 
 

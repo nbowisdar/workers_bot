@@ -81,6 +81,13 @@ def get_all_position() -> list[PositionModel]:
     return [_get_pos_model(pos) for pos in Position.select()]
 
 
+def get_pos_by_name(pos_name: str, get_model=False) -> PositionModel | Position:
+    pos = Position.get(name=pos_name)
+    if get_model:
+        return _get_pos_model(pos)
+    return pos
+
+
 def get_user(worker_id: int) -> UserModel:
     user = Worker.get_or_none(worker_id=worker_id)
     return _get_user_model(user)
@@ -99,12 +106,12 @@ def update_user(user_new_data: UserModel):
     user.email = user_new_data['email']
     user.tag = user_new_data['tag']
     user.department = user_new_data['department']
-    user.position = user_new_data['position']
+    #user.position = user_new_data['position']
     user.status = user_new_data['status']
-    user.kpi = user_new_data['kpi']
+    #user.kpi = user_new_data['kpi']
     user.skill = user_new_data['skill']
-    user.wage_day = user_new_data['wage_day']
-    user.wage_night = user_new_data['wage_night']
+    #user.wage_day = user_new_data['wage_day']
+    #user.wage_night = user_new_data['wage_night']
     user.employment_date = user_new_data['employment_date']
     user.save()
     logger.info(f'User updated {user.worker_id}')
@@ -114,7 +121,6 @@ def get_one_shift(worker_id: int, date: str) -> ShiftModel | None:
     worker = Worker.get_or_none(worker_id=worker_id)
     if not worker:
         raise Exception("User doesnt exist")
-    # TODO maybe doesn't work
     shift = worker.shifts.where(WorkShift.date == date).get_or_none()
     if not shift:
         return
@@ -133,7 +139,6 @@ def get_shifts(data: TimePerModel) -> list[ShiftModel]:
     result = []
     if not worker:
         raise Exception("User doesnt exist")
-    # TODO maybe doesn't work
     shifts = worker.shifts.select().where(
         data.time_start <= WorkShift.date
     ).where(
@@ -163,7 +168,9 @@ def get_wage_data_by_month(data: YearMonth):
 
 
 if __name__ == '__main__':
-    user = Worker.get(worker_id=286365412)#.where(Worker.worker_id == 123)
-    x = user.shifts.where(WorkShift.date > "20/12/2023").get_or_none()
-    print(x)
-    #print(x.day_hours)
+    # user = Worker.get(worker_id=286365412)#.where(Worker.worker_id == 123)
+    # x = user.shifts.where(WorkShift.date > "20/12/2023").get_or_none()
+    # print(x)
+    # #print(x.day_hours)
+    pos = get_pos_by_name('dev')
+    print(pos)
