@@ -24,6 +24,14 @@ class PluralShifts(WithWage):
     date_to: str
 
 
+class PositionModel(TypedDict):
+    name: str
+    kpi: float
+    wage_day: float
+    wage_night: float
+    #workers: list[UserModel] | None
+
+
 class UserModel(TypedDict):
     worker_id: int
     name: str
@@ -32,20 +40,12 @@ class UserModel(TypedDict):
     email: str
     tag: str
     department: str
-    # position: str
+    position: PositionModel
     status: str
     employment_date: str
     skill: float
     note: str
     shifts: list[ShiftModel] | None
-
-
-class PositionModel(TypedDict):
-    name: str
-    kpi: float
-    wage_day: float
-    wage_night: float
-    workers: list[UserModel] | None
 
 
 class TimePerModel(NamedTuple):

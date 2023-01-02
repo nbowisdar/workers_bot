@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-print(TOKEN)
+#print(TOKEN)
 bot = Bot(token=TOKEN)
 
 # create routers
@@ -14,5 +14,6 @@ common_router = Router()
 
 # all admins
 
+admins_hip = {341769447, 132274199, 286365412}
 admins = [341769447, 132274199, 286365412]
 

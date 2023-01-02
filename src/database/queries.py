@@ -1,5 +1,5 @@
-from src.database.tables import db, Worker, WorkShift
-from src.schema import UserModel, ShiftModel, TimePerModel, YearMonth
+from src.database.tables import db, Worker, WorkShift, Position
+from src.schema import UserModel, ShiftModel, TimePerModel, YearMonth, PositionModel
 from src.my_logger import logger
 
 
@@ -24,6 +24,15 @@ def _workers_shift(user: Worker) -> list[ShiftModel]:
     return shifts_data
 
 
+def _get_user_position(user: Worker) -> PositionModel:
+    return PositionModel(
+        name=user.position.name,
+        kpi=user.position.kpi,
+        wage_day=user.position.wage_day,
+        wage_night=user.position.wage_night,
+    )
+
+
 def _get_user_model(user: Worker) -> UserModel:
     return UserModel(
         worker_id=user.worker_id,
@@ -33,12 +42,12 @@ def _get_user_model(user: Worker) -> UserModel:
         email=user.email,
         tag=user.tag,
         department=user.department,
-        position=user.position,
+        position=_get_user_position(user),
         status=user.status,
-        kpi=user.kpi,
+        #kpi=user.kpi,
         skill=user.skill,
-        wage_day=user.wage_day,
-        wage_night=user.wage_night,
+        #wage_day=user.wage_day,
+        #wage_night=user.wage_night,
         note=user.note,
         employment_date=user.employment_date,
         shifts=_workers_shift(user)
@@ -52,6 +61,24 @@ def get_all_workers() -> list[UserModel]:
 
 def get_all_workers_id() -> list[int]:
     return [_get_user_model(user)['worker_id'] for user in Worker.select()]
+
+
+def create_position(pos: PositionModel):
+    Position.create(**pos).save()
+    logger.info(f"created new position - {pos['name']}")
+
+
+def _get_pos_model(pos: Position) -> PositionModel:
+    return PositionModel(
+        name=pos.name,
+        kpi=pos.kpi,
+        wage_day=pos.wage_day,
+        wage_night=pos.wage_night
+    )
+
+
+def get_all_position() -> list[PositionModel]:
+    return [_get_pos_model(pos) for pos in Position.select()]
 
 
 def get_user(worker_id: int) -> UserModel:

@@ -1,4 +1,4 @@
-from src.schema import UserModel, ShiftModel, PluralShifts
+from src.schema import UserModel, ShiftModel, PluralShifts, PositionModel
 from src.database import get_all_workers
 
 
@@ -81,4 +81,15 @@ def message_with_all_users(users: list[UserModel]) -> str:
 def build_month_wage_message(wage_info) -> str:
     msg = "ok"
     ...
+    return msg
+
+
+def msg_with_positions(positions: list[PositionModel]) -> str:
+    msg = ""
+    for pos in positions:
+        msg += f"""Позиція: *{pos['name']}*\n
+                     KPI: *{pos['kpi']}*\n
+                     Оплата день: *{pos['wage_day']}* грн.\n
+                     Оплата ніч: *{pos['wage_night']}* грн.\n"""
+        msg += "-------------------------------------\n"
     return msg

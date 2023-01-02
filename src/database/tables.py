@@ -43,7 +43,7 @@ class WorkShift(BaseModel):
 
 
 def create_db():
-    db.create_tables([Worker, WorkShift])
+    db.create_tables([Worker, WorkShift, Position])
 
 
 if __name__ == '__main__':
