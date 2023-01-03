@@ -81,7 +81,10 @@ def message_with_all_users(users: list[UserModel]) -> str:
 # 94,5 денних годин х 90,13= 8517,29грн
 # 49,5 нічних годин × 102,64 = 5080,68грн
 # В сумі 13597,97, з яких 70% до оплати - 9518,58грн та 30% КПІ - 4079,39грн"""
-
+"""30% КПІ 
+- 5%+5% швидкість чатів та мейлів - 90% і 100% відповідно (1291,81 грн)
+- 20% крі - 80% (2175,67грн)
+в сумі за КПІ - 3467,48грн"""
 
 def build_month_wage_message(info: PluralShifts) -> str:
     msg = f"{info['date'].capitalize()} - {info['full_name']} \n" \
@@ -89,7 +92,9 @@ def build_month_wage_message(info: PluralShifts) -> str:
           f"{info['days_hours']} нічних годин * {info['wage_night']} = {info['days_hours']*info['wage_night']}\n" \
           f"В сумі <b>{info['earned']} грн.</b> з яких:\n" \
           f"70% до оплати - <b>{round(info['earned']/100*70, 2)} грн.</b>" \
-          f" та 30% КПІ - <b>{round(info['earned']/100*30, 2)} грн.</b>"
+          f" та 30% КПІ - <b>{round(info['earned']/100*30, 2)} грн.</b>" \
+          f"30% КПІ \n" \
+          f""
     return msg
 
 

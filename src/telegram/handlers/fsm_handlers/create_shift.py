@@ -92,7 +92,7 @@ async def set_night(message: Message, state: FSMContext):
 async def process_simple_calendar(message: Message, state: FSMContext):
     try:
         if message.text == "Сьогоднішня дата":
-            cur_date = date.today()#.strftime("%Y/%m/%d")
+            cur_date = date.today()
         else:
             cur_date = datetime.strptime(message.text, "%Y/%m/%d").date()
         await state.update_data(date=cur_date)

@@ -1,7 +1,9 @@
+import json
+
 from dateutil.relativedelta import relativedelta
 
 from src.database.tables import db, Worker, WorkShift, Position
-from src.schema import UserModel, ShiftModel, TimePerModel, YearMonth, PositionModel, PluralShifts
+from src.schema import UserModel, ShiftModel, TimePerModel, YearMonth, PositionModel, Shifts
 from src.my_logger import logger
 from datetime import datetime
 
@@ -175,18 +177,39 @@ def _calculate_hours(shifts: list[WorkShift]) -> tuple[int, int]:
     return all_day, all_night
 
 
-# TODO without skills
-def _calc_all_earned(shifts: list[WorkShift], worker: Worker) -> int:
-    kpi = worker.position.kpi
+def _calc_kpi_part(s: int, shift: WorkShift, pos: Position) -> float:
+    pos_kpi = list(json.loads(pos.kpi_data).values())
+    shift_kpi = list(json.loads(shift.kpi_data).values())
+    result = 0
+    for i in range(len(pos_kpi)):
+        result += (s / 100 * pos_kpi[i]) * (s / 100 * shift_kpi[i])
+    return round(result, 2)
+
+
+def _calc_all_earned(shifts: list[WorkShift], worker: Worker) -> float:
+    # kpi = worker.position.kpi
     earned = 0
+    skill = worker.skill
+    wg_d = worker.position.wage_day
+    wg_n = worker.position.wage_night
     for shift in shifts:
-        a = shift.day_hours * worker.position.wage_day + shift.night_hours * worker.position.wage_night
-        b = (shift.day_hours * worker.position.wage_day + shift.night_hours * worker.position.wage_night)
-        earned += a * 70 / 100 + b * kpi / 100 * 30 / 100
-    return earned
+        s = shift.day_hours * (wg_d+(wg_d*skill)) + shift.night_hours * (wg_n+(wg_n*skill))
+        # b = shift.day_hours * pos.wage_day + shift.night_hours * pos.wage_night
+        earned += (s * 70 / 100) + _calc_kpi_part(s, shift.kpi_data, worker.position)  # (s * 30 / 100 * kpi) # / 100
+    return round(earned, 2)
 
 
-def get_wage_data_by_month(data: YearMonth, month: str) -> PluralShifts:
+def _calc_avg_kpi(shifts: list[WorkShift], worker: Worker) -> str:
+    # pos = worker.position
+    # avg_day = 0
+    # avg_night = 0
+    # for shift in shifts:
+    #     avg_day += shift.
+    # TODO calculate kpi
+
+
+
+def get_wage_data_by_month(data: YearMonth, month: str) -> Shifts:
     worker = Worker.get_or_none(worker_id=data.worker_id)
     if not worker:
         raise Exception("User doesnt exist")
@@ -197,16 +220,19 @@ def get_wage_data_by_month(data: YearMonth, month: str) -> PluralShifts:
                                  (WorkShift.date <= up_to_date))
     all_day, all_night = _calculate_hours(shifts)
     earned = _calc_all_earned(shifts, worker)
-    return PluralShifts(
+    return Shifts(
         worker_id=worker.worker_id,
         full_name=f"{worker.name} {worker.surname}",
-        wage_day=worker.position.wage_day,
-        wage_night=worker.position.wage_night,
-        days_hours=all_day,
-        nights_hours=all_night,
+        skills=worker.skill,
+        # kpi_data=worker.position.kpi_data,
+        # wage_day=worker.position.wage_day,
+        # wage_night=worker.position.wage_night,
+        # days_hours=all_day,
+        # nights_hours=all_night,
         date=month,
-        earned=_calc_all_earned(shifts, worker)
-        )
+        earned=_calc_all_earned(shifts, worker),
+        kpi_data_calculated=_calc_avg_kpi(shifts, worker)
+        )  # TODO not ended
 
 
 def get_workers_kpi(worker_id: int) -> str:

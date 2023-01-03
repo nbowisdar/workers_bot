@@ -3,30 +3,34 @@ from aiogram.types import ReplyKeyboardMarkup
 
 
 class WithWage(TypedDict):
-    earned: float
     worker_id: int
     full_name: str
+    skills: str
 
 
 class ShiftModel(WithWage):
+    kpi_data: str
     day_hours: float
     night_hours: float
-    kpi_data: str
+    # kpi_data: str
     date: str
 
 
-class manager_kpi(WithWage):
-    user_kpi: list[ShiftModel] | None
-
-
-class PluralShifts(WithWage):
-    wage_day: float
-    wage_night: float
-    days_hours: float
-    nights_hours: float
+class Shifts(WithWage):
+    shifts: list[ShiftModel]
+    earned: float
+    kpi_data_calculated: str
     date: str
-    # date_from: str
-    # date_to: str
+
+
+# class PluralShifts(WithWage):
+#     wage_day: float
+#     wage_night: float
+#     days_hours: float
+#     nights_hours: float
+#     date: str
+#     kpi_data_calculated: str
+
 
 
 text_json = str
