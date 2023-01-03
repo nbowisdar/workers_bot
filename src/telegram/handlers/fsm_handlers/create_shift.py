@@ -1,8 +1,11 @@
 from pprint import pprint
-from src.database import create_shift
+from src.database import create_shift, get_workers_kpi
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+
+from src.telegram.messages import get_kpi_template
+from src.telegram.other import pars_kpi_data
 from src.telegram.setup import admin_router
 from aiogram3_calendar import SimpleCalendar, simple_cal_callback
 from src.telegram.keyboards import admin_kb_main, today_btn
@@ -51,11 +54,12 @@ async def set_day(message: Message, state: FSMContext):
 async def set_night(message: Message, state: FSMContext):
     try:
         await state.update_data(night_hours=message.text)
-        await state.set_state(Shift.date)
+        await state.set_state(Shift.kpi_data)
         data = await state.get_data()
-        kpi_template = get_workers_kpi(data['worker_id'])
-        await message.reply(f"Вкажіть на скільки працівник гарно відпрацював зміну:"
-                            f"",
+        text = get_workers_kpi(data['worker_id'])
+        kpi_template = get_kpi_template(text)
+        await message.reply(f"Вкажіть на скільки працівник гарно відпрацював зміну:\n"
+                            f"{kpi_template}",
                             reply_markup=today_btn,
                             parse_mode="MARKDOWN")
     except ValueError:
@@ -66,8 +70,10 @@ async def set_night(message: Message, state: FSMContext):
 
 @admin_router.message(Shift.kpi_data)
 async def set_night(message: Message, state: FSMContext):
+    kpi_data = message.text
     try:
-        await state.update_data(night_hours=message.text)
+        data = pars_kpi_data(kpi_data)
+        await state.update_data(kpi_data=data)
         await state.set_state(Shift.date)
         await message.reply("Вкажіть дату: \n"
                             "Введіть дату у наступному форматі: \n"
@@ -75,9 +81,10 @@ async def set_night(message: Message, state: FSMContext):
                             "Приклад: 2015/10/20",
                             reply_markup=today_btn,
                             parse_mode="MARKDOWN")
-    except ValueError:
+    except ValueError as err:
         await state.clear()
-        await message.reply('Помилка! Введіть число🛑',
+        await message.reply(f'Помилка! Невірне значення - {kpi_data}'
+                            f'Текст помилки - {err}',
                             reply_markup=admin_kb_main)
 
 

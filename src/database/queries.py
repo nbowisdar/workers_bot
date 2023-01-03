@@ -18,8 +18,6 @@ def _workers_shift(user: Worker) -> list[ShiftModel]:
     shifts = user.shifts
     shifts_data = []
     for shift in shifts:
-        for i in shift:
-            print(i)
         shifts_data.append(ShiftModel(
             worker_id=shift.worker,
             day_hours=shift.day_hours,
@@ -214,6 +212,9 @@ def get_wage_data_by_month(data: YearMonth, month: str) -> PluralShifts:
 def get_workers_kpi(worker_id: int) -> str:
     worker = Worker.get(worker_id=worker_id)
     return worker.position.kpi_data
+
+
+
 
 
 if __name__ == '__main__':

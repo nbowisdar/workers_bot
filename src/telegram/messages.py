@@ -1,5 +1,5 @@
 from pprint import pprint
-
+import json
 from src.schema import UserModel, ShiftModel, PluralShifts, PositionModel
 from src.database import get_all_workers
 from src.telegram.other import extract_kpi_data
@@ -105,3 +105,12 @@ def msg_with_positions(positions: list[PositionModel]) -> str:
 {kpi_part}"""
         msg += "----------------------------------------\n"
     return msg
+
+
+text_json = str
+def get_kpi_template(text: text_json) -> str:
+    msg = ""
+    data = json.loads(text)
+    for key in data.keys():
+        msg += f"{key}->100 "
+    return '`' + msg + '`'

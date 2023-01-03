@@ -6,7 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 from src.database import get_all_workers_id, create_position
 from src.schema import PositionModel
 from src.telegram.keyboards import admin_kb_main, admin_kb_pos
-from src.telegram.other import extract_kpi_data
+from src.telegram.other import extract_kpi_data, pars_kpi_data
 from src.telegram.setup import admin_router
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 import json
@@ -53,24 +53,12 @@ async def set_kpi_pos(message: Message, state: FSMContext):
                             parse_mode="MARKDOWN")
         await state.clear()
 
-text_json = str
-'get value in format {field1->20 field2->80}'
-def pars_kpi_data(text: str) -> text_json:
-    rez = {}
-    fields = text.split(" ")
-    for f in fields:
-        key, value = f.split("->")
-        rez[key] = int(value)
-    if sum([p for p in rez.values()]) != 100:
-        raise ValueError("Повинно бути 100%!")
-    return json.dumps(rez, ensure_ascii=False).encode("utf8").decode()
-
 
 @admin_router.message(PositionState.kpi_data)
 async def set_kpi_pos(message: Message, state: FSMContext):
     kpi_data = message.text
     try:
-        parsed_data = pars_kpi_data(kpi_data)
+        parsed_data = pars_kpi_data(kpi_data, check_100_percent=True)
         # x = json.loads(parsed_data)
         await state.update_data(kpi_data=parsed_data)
         await state.set_state(PositionState.wage_day)
