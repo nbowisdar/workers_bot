@@ -2,6 +2,7 @@ from pprint import pprint
 
 from src.schema import UserModel, ShiftModel, PluralShifts, PositionModel
 from src.database import get_all_workers
+from src.telegram.other import extract_kpi_data
 
 
 def generate_message_with_user_info(user: UserModel) -> str:
@@ -76,10 +77,10 @@ def message_with_all_users(users: list[UserModel]) -> str:
         return "У вас ще немає працівників"
     return "Усі працівники:\n" + msg
 
-"""СЕРПЕНЬ - Ляхов Ілля Михайлович
-94,5 денних годин х 90,13= 8517,29грн
-49,5 нічних годин × 102,64 = 5080,68грн
-В сумі 13597,97, з яких 70% до оплати - 9518,58грн та 30% КПІ - 4079,39грн"""
+# """СЕРПЕНЬ - Ляхов Ілля Михайлович
+# 94,5 денних годин х 90,13= 8517,29грн
+# 49,5 нічних годин × 102,64 = 5080,68грн
+# В сумі 13597,97, з яких 70% до оплати - 9518,58грн та 30% КПІ - 4079,39грн"""
 
 
 def build_month_wage_message(info: PluralShifts) -> str:
@@ -95,9 +96,12 @@ def build_month_wage_message(info: PluralShifts) -> str:
 def msg_with_positions(positions: list[PositionModel]) -> str:
     msg = ""
     for pos in positions:
-        msg += f"""Позиція: *{pos['name']}*\n
-                     KPI: *{pos['kpi']}*\n
-                     Оплата день: *{pos['wage_day']}* грн.\n
-                     Оплата ніч: *{pos['wage_night']}* грн.\n"""
-        msg += "-------------------------------------\n"
+        kpi_part = extract_kpi_data(pos['kpi_data'])
+        msg += f"""Позиція: *{pos['name']}*
+
+Оплата день: *{pos['wage_day']}* грн.
+Оплата ніч: *{pos['wage_night']}* грн.
+Сумма KPI: *{pos['kpi']}*
+{kpi_part}"""
+        msg += "----------------------------------------\n"
     return msg

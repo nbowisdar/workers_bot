@@ -1,3 +1,4 @@
+import json
 from datetime import date, datetime
 
 
@@ -19,5 +20,11 @@ months = ["січень", "лютий", "березень", "квітень", "�
 def get_num_month(month: str) -> int:
     return months.index(month) + 1
 
-#datetime_object = datetime.strptime(x, '%y/%m/%d').date()
+
+def extract_kpi_data(text_json: str) -> str:
+    rez = ""
+    for key, value in json.loads(text_json).items():
+        rez += f"{key} - *{value}*% \n"
+    return rez
+
 

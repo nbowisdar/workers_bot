@@ -18,10 +18,13 @@ def _workers_shift(user: Worker) -> list[ShiftModel]:
     shifts = user.shifts
     shifts_data = []
     for shift in shifts:
+        for i in shift:
+            print(i)
         shifts_data.append(ShiftModel(
             worker_id=shift.worker,
             day_hours=shift.day_hours,
             night_hours=shift.night_hours,
+            kpi_data=shift.kpi_data,
             date=shift.date
         ))
     return shifts_data
@@ -75,6 +78,7 @@ def _get_pos_model(pos: Position) -> PositionModel:
     return PositionModel(
         name=pos.name,
         kpi=pos.kpi,
+        kpi_data=pos.kpi_data,
         wage_day=pos.wage_day,
         wage_night=pos.wage_night
     )
@@ -184,7 +188,6 @@ def _calc_all_earned(shifts: list[WorkShift], worker: Worker) -> int:
     return earned
 
 
-
 def get_wage_data_by_month(data: YearMonth, month: str) -> PluralShifts:
     worker = Worker.get_or_none(worker_id=data.worker_id)
     if not worker:
@@ -206,6 +209,11 @@ def get_wage_data_by_month(data: YearMonth, month: str) -> PluralShifts:
         date=month,
         earned=_calc_all_earned(shifts, worker)
         )
+
+
+def get_workers_kpi(worker_id: int) -> str:
+    worker = Worker.get(worker_id=worker_id)
+    return worker.position.kpi_data
 
 
 if __name__ == '__main__':

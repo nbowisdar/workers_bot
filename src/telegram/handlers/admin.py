@@ -89,10 +89,11 @@ async def show_all_workers(message: Message):
         await message.answer(msg,
                              reply_markup=admin_kb_main,
                              parse_mode="MARKDOWN")
-    except:
+    except Exception as err:
         logger.error(f'User {message.from_user.id} tried use admin panel!')
+        logger.error(err)
 
-
+#286365412
 @admin_router.message(Text(text="Детальніше про працівника"))
 async def get_worker_info(message: Message, state: FSMContext):
     try:
@@ -107,7 +108,8 @@ async def get_worker_info(message: Message, state: FSMContext):
 async def position(message: Message):
     await check_access(message)
     await message.answer("Розділ: *Посади*",
-                         reply_markup=admin_kb_pos)
+                         reply_markup=admin_kb_pos,
+                         parse_mode="MARKDOWN")
 
 
 @admin_router.message((F.text == "Усі посади") & (F.from_user.id.in_(admins_hip)))

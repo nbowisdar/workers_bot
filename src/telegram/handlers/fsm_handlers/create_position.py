@@ -1,11 +1,15 @@
+from pprint import pprint
+
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from src.database import get_all_workers_id, create_position
 from src.schema import PositionModel
 from src.telegram.keyboards import admin_kb_main, admin_kb_pos
+from src.telegram.other import extract_kpi_data
 from src.telegram.setup import admin_router
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+import json
 
 kpi30_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="30")]], resize_keyboard=True)
 
@@ -13,7 +17,7 @@ kpi30_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="30")]], resize_ke
 class PositionState(StatesGroup):
     name = State()
     kpi = State()
-    # skill = State()
+    kpi_data = State()
     wage_day = State()
     wage_night = State()
 
@@ -34,10 +38,45 @@ async def set_kpi_pos(message: Message, state: FSMContext):
     kpi = message.text
     try:
         await state.update_data(kpi=float(kpi))
-        await state.set_state(PositionState.wage_day)
-        await message.reply("Вкажіть вартість часу у день", reply_markup=ReplyKeyboardRemove())
+        await state.set_state(PositionState.kpi_data)
+        await message.reply("Вкажіть на які поля та % на які буде ділитяся KPI.\n"
+                            "Данні повинні бути у такому форматі!\n"
+                            "`поле1->20 поле2->80`\n"
+                            "Де:  поле - назва одного з KPI\n"
+                            "Значення - %\n"
+                            "Пильнуйте щоби у вас вийшло 100%",
+                            reply_markup=ReplyKeyboardRemove(),
+                            parse_mode="MARKDOWN")
     except ValueError:
         await message.reply(f"Невірне значення: *{kpi}*, повинно бути чило!",
+                            reply_markup=admin_kb_main,
+                            parse_mode="MARKDOWN")
+        await state.clear()
+
+text_json = str
+'get value in format {field1->20 field2->80}'
+def pars_kpi_data(text: str) -> text_json:
+    rez = {}
+    fields = text.split(" ")
+    for f in fields:
+        key, value = f.split("->")
+        rez[key] = int(value)
+    if sum([p for p in rez.values()]) != 100:
+        raise ValueError("Повинно бути 100%!")
+    return json.dumps(rez, ensure_ascii=False).encode("utf8").decode()
+
+
+@admin_router.message(PositionState.kpi_data)
+async def set_kpi_pos(message: Message, state: FSMContext):
+    kpi_data = message.text
+    try:
+        parsed_data = pars_kpi_data(kpi_data)
+        # x = json.loads(parsed_data)
+        await state.update_data(kpi_data=parsed_data)
+        await state.set_state(PositionState.wage_day)
+        await message.reply("Вкажіть вартість часу у день", reply_markup=ReplyKeyboardRemove())
+    except Exception as err:
+        await message.reply(f"Виникла наступна помилка - `{err}`",
                             reply_markup=admin_kb_main,
                             parse_mode="MARKDOWN")
         await state.clear()
@@ -77,10 +116,11 @@ async def set_night(message: Message, state: FSMContext):
 
 async def save_data(message: Message, data: PositionModel):
     create_position(data)
-
+    kpi_text_part = extract_kpi_data(data['kpi_data'])
     await message.answer(f"Ви створили нову позицію!\n"
                          f"Назва: *{data['name']}*\n"
                          f"KPI: *{data['kpi']}*\n"
+                         f"{kpi_text_part}"
                          f"Оплата день: *{data['wage_day']}* грн.\n"
                          f"Оплата ніч: *{data['wage_night']}* грн.",
                          reply_markup=admin_kb_pos,

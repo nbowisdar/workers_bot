@@ -7,4 +7,7 @@ from src.my_logger import logger
 if __name__ == '__main__':
     create_db()
     logger.info("Bot started")
-    asyncio.run(start_bot())
+    try:
+        asyncio.run(start_bot())
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by admin")

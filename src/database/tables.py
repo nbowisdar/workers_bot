@@ -16,6 +16,7 @@ class BaseModel(Model):
 class Position(BaseModel):
     name = CharField(unique=True)
     kpi = FloatField(null=True)
+    kpi_data = CharField()
     wage_day = FloatField()
     wage_night = FloatField()
 
@@ -39,6 +40,7 @@ class WorkShift(BaseModel):
     worker = ForeignKeyField(Worker, backref='shifts', on_delete='CASCADE')
     day_hours = FloatField()
     night_hours = FloatField()
+    kpi_data = CharField()
     date = DateField(unique=True)
 
 

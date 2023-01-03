@@ -11,6 +11,7 @@ class WithWage(TypedDict):
 class ShiftModel(WithWage):
     day_hours: float
     night_hours: float
+    kpi_data: str
     date: str
 
 
@@ -28,9 +29,11 @@ class PluralShifts(WithWage):
     # date_to: str
 
 
+text_json = str
 class PositionModel(TypedDict):
     name: str
     kpi: float
+    kpi_data: text_json
     wage_day: float
     wage_night: float
     #workers: list[UserModel] | None

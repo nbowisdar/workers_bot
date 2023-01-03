@@ -15,6 +15,7 @@ class Shift(StatesGroup):
     worker_id = State()
     day_hours = State()
     night_hours = State()
+    kpi_data = State()
     date = State()
 
 
@@ -47,6 +48,23 @@ async def set_day(message: Message, state: FSMContext):
 
 
 @admin_router.message(Shift.night_hours)
+async def set_night(message: Message, state: FSMContext):
+    try:
+        await state.update_data(night_hours=message.text)
+        await state.set_state(Shift.date)
+        data = await state.get_data()
+        kpi_template = get_workers_kpi(data['worker_id'])
+        await message.reply(f"Вкажіть на скільки працівник гарно відпрацював зміну:"
+                            f"",
+                            reply_markup=today_btn,
+                            parse_mode="MARKDOWN")
+    except ValueError:
+        await state.clear()
+        await message.reply('Помилка! Введіть число🛑',
+                            reply_markup=admin_kb_main)
+
+
+@admin_router.message(Shift.kpi_data)
 async def set_night(message: Message, state: FSMContext):
     try:
         await state.update_data(night_hours=message.text)
