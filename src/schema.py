@@ -14,6 +14,7 @@ class ShiftModel(WithWage):
     night_hours: float
     # kpi_data: str
     date: str
+    earned: float
 
 
 class Shifts(WithWage):
@@ -23,13 +24,19 @@ class Shifts(WithWage):
     date: str
 
 
-# class PluralShifts(WithWage):
-#     wage_day: float
-#     wage_night: float
-#     days_hours: float
-#     nights_hours: float
-#     date: str
-#     kpi_data_calculated: str
+class CalcModel(TypedDict):
+    all_days_hours: float
+    all_night_hours: float
+    all_days_earned: float
+    all_night_earned: float
+    earned: float
+    kpi_data_calculated: dict
+
+
+class ShiftsData(WithWage):
+    date: str
+    calculated_data: CalcModel
+    # kpi_data_calculated: str
 
 
 
