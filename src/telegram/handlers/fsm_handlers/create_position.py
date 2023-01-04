@@ -41,10 +41,10 @@ async def set_kpi_pos(message: Message, state: FSMContext):
         await state.set_state(PositionState.kpi_data)
         await message.reply("Вкажіть на які поля та % на які буде ділитяся KPI.\n"
                             "Данні повинні бути у такому форматі!\n"
-                            "`поле1->20 поле2->80`\n"
+                            "`поле1->5 поле2->5 поле3->20`\n"
                             "Де:  поле - назва одного з KPI\n"
                             "Значення - %\n"
-                            "Пильнуйте щоби у вас вийшло 100%",
+                            "Пильнуйте щоби у вас вийшло 30%",
                             reply_markup=ReplyKeyboardRemove(),
                             parse_mode="MARKDOWN")
     except ValueError:
@@ -58,8 +58,7 @@ async def set_kpi_pos(message: Message, state: FSMContext):
 async def set_kpi_pos(message: Message, state: FSMContext):
     kpi_data = message.text
     try:
-        parsed_data = pars_kpi_data(kpi_data, check_100_percent=True)
-        # x = json.loads(parsed_data)
+        parsed_data = pars_kpi_data(kpi_data, check_30_percent=True)
         await state.update_data(kpi_data=parsed_data)
         await state.set_state(PositionState.wage_day)
         await message.reply("Вкажіть вартість часу у день", reply_markup=ReplyKeyboardRemove())
@@ -77,7 +76,7 @@ async def set_day(message: Message, state: FSMContext):
     try:
         await state.update_data(wage_day=float(wage))
         await state.set_state(PositionState.wage_night)
-        await message.reply("Вкажіть вартість часу у ноч")
+        await message.reply("Вкажіть вартість часу у ночі")
     except ValueError:
         await message.reply(f"Невірне значення: *{wage}*, повинно бути чило!",
                             reply_markup=admin_kb_main,

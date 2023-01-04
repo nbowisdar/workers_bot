@@ -3,8 +3,9 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 kb1 = [
     [KeyboardButton(text="Показати всіх"), KeyboardButton(text="Детальніше про працівника")],
     [KeyboardButton(text="Додати нову зміну"), KeyboardButton(text="Видалити працівника")],
-    [KeyboardButton(text="Додати нового працівника"),KeyboardButton(text="Оновити інфармацію про працівника")],
-    [KeyboardButton(text="Посади")],
+    [KeyboardButton(text="Додати нового працівника"), KeyboardButton(text="Оновити інфармацію про працівника")],
+    [KeyboardButton(text="Назад"), KeyboardButton(text="Посади")],
+
 ]
 
 admin_kb_main = ReplyKeyboardMarkup(
@@ -15,7 +16,7 @@ admin_kb_main = ReplyKeyboardMarkup(
 kb1_1 = [
     [KeyboardButton(text="Усі посади"), KeyboardButton(text="Оновити посаду")],
     [KeyboardButton(text="Створити нову посаду")],
-    [KeyboardButton(text="На головну")]
+    [KeyboardButton(text="На головну")],
 ]
 
 admin_kb_pos = ReplyKeyboardMarkup(

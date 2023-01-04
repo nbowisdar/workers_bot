@@ -60,7 +60,7 @@ async def set_night(message: Message, state: FSMContext):
         kpi_template = get_kpi_template(text)
         await message.reply(f"Вкажіть на скільки працівник гарно відпрацював зміну:\n"
                             f"{kpi_template}",
-                            reply_markup=today_btn,
+                            #reply_markup=today_btn,
                             parse_mode="MARKDOWN")
     except ValueError:
         await state.clear()

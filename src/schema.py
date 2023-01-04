@@ -31,6 +31,8 @@ class CalcModel(TypedDict):
     all_days_earned: float
     all_night_earned: float
     earned: float
+    earned_stable: float
+    earned_kpi: float
     kpi_data_calculated: dict
 
 

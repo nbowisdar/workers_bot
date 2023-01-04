@@ -77,20 +77,13 @@ def message_with_all_users(users: list[UserModel]) -> str:
         return "У вас ще немає працівників"
     return "Усі працівники:\n" + msg
 
-# """СЕРПЕНЬ - Ляхов Ілля Михайлович
-# 94,5 денних годин х 90,13= 8517,29грн
-# 49,5 нічних годин × 102,64 = 5080,68грн
-# В сумі 13597,97, з яких 70% до оплати - 9518,58грн та 30% КПІ - 4079,39грн"""
-"""30% КПІ 
-- 5%+5% швидкість чатів та мейлів - 90% і 100% відповідно (1291,81 грн)
-- 20% крі - 80% (2175,67грн)
-в сумі за КПІ - 3467,48грн"""
 
-
-def build_kpi_msg(kpi: dict, kpi_pos: dict) -> str:
+def build_kpi_msg(kpi: dict, kpi_pos: dict, calc_data: dict) -> str:
     msg = ""
     for k, v in kpi.items():
-        msg += f"\t\t\t\t {k} - <b>{kpi_pos[k]}</b>% (Виконано на - <b>{v}</b>%)\n"
+        full_earned = calc_data['all_days_earned'] + calc_data['all_night_earned']
+        e = round((full_earned / 100 * kpi_pos[k])/100*v, 2)
+        msg += f"\t\t\t\t {k} - <b>{kpi_pos[k]}</b>% (Виконано на - <b>{v}</b>%)\n - {e} грн. \n"
     return msg
 
 
@@ -103,9 +96,9 @@ def build_month_wage_message(info: ShiftsData) -> str:
           f"{calc_data['all_days_hours']} ч. день * <b>{wage_d}</b> грн. = {calc_data['all_days_earned']} грн.\n" \
           f"{calc_data['all_days_hours']} ч. ніч * <b>{wage_n}</b> грн. = {calc_data['all_night_earned']} грн.\n" \
           f"В сумі <b>{calc_data['earned']} грн.</b> з яких:\n" \
-          f"70% до оплати - <b>{round(calc_data['earned']/100*70, 2)}</b> грн." \
-          f" та 30% КПІ - <b>{round(calc_data['earned']/100*30, 2)}</b> грн.\n" \
-          f"КПІ: \n" + build_kpi_msg(kpi, info['kpi'])
+          f"70% до оплати - <b>{calc_data['earned_stable']}</b> грн." \
+          f" та 30% КПІ - <b>{calc_data['earned_kpi']}</b> грн.\n"  \
+          f"КПІ: \n" + build_kpi_msg(kpi, info['kpi'], calc_data)
 
     return msg
 

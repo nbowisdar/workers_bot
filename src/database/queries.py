@@ -168,22 +168,13 @@ def get_shifts(data: TimePerModel) -> list[ShiftModel]:
     return result
 
 
-# def _calculate_hours(shifts: list[WorkShift]) -> tuple[int, int]:
-#     all_day = 0
-#     all_night = 0
-#     for shift in shifts:
-#         all_day += shift.day_hours
-#         all_night += shift.night_hours
-#
-#     return all_day, all_night
-
-
 def _calc_kpi_part(s: int, shift: WorkShift, pos: Position) -> float:
     pos_kpi = list(json.loads(pos.kpi_data).values())
     shift_kpi = list(json.loads(shift.kpi_data).values())
     result = 0
-    s = s / 100 * pos.kpi
+    #s = s / 100 * pos.kpi
     for i in range(len(pos_kpi)):
+        # result += ()
         result += (s / 100 * pos_kpi[i]) / 100 * shift_kpi[i]
     return round(result, 2)
 
@@ -191,21 +182,25 @@ def _calc_kpi_part(s: int, shift: WorkShift, pos: Position) -> float:
 def _update_kpi(kpi_data: dict, shifts: list[WorkShift]) -> dict:
     kpi_keys = list(kpi_data.keys())
     result = {}
-    count_shift = 0
+    all_hours = 0
+    all_percent = 0
     for shift in shifts:
+        cur_hours = shift.day_hours + shift.night_hours
+        all_hours += cur_hours
         kpi_cur = json.loads(shift.kpi_data)
         for key in kpi_keys:
             prev = result.get(key, 0)
-            result[key] = prev + kpi_cur[key]
+            result[key] = prev + kpi_cur[key] * cur_hours
 
-        count_shift += 1
     for k, v in result.items():
-        result[k] = round(v/count_shift, 2)
+        result[k] = round(v/all_hours, 2)
     return result
 
 
 def _calculate_shifts_data(*, shifts: list[WorkShift], worker: Worker) -> CalcModel:
     earned = 0
+    earned_stable= 0
+    earned_kpi = 0
     all_days_h = 0
     all_earned_day = 0
     all_night_h = 0
@@ -218,18 +213,21 @@ def _calculate_shifts_data(*, shifts: list[WorkShift], worker: Worker) -> CalcMo
         earned_day = shift.day_hours * (wg_d+(wg_d/100*skill))
         earned_night = shift.night_hours * (wg_n+(wg_n/100*skill))
         s = earned_day + earned_night
+        earned_stable += s * 70 / 100
+        earned_kpi += _calc_kpi_part(s, shift, worker.position)
         earned += (s * 70 / 100) + _calc_kpi_part(s, shift, worker.position)  # (s * 30 / 100 * kpi) # / 100
         all_days_h += shift.day_hours
         all_night_h += shift.night_hours
         all_earned_day += earned_day
         all_earned_night += earned_night
-    print(earned)
     return CalcModel(
         all_days_hours=all_days_h,
         all_night_hours=all_night_h,
         all_days_earned=all_earned_day,
         all_night_earned=all_earned_night,
         earned=round(earned, 2),
+        earned_stable=round(earned_stable, 2),
+        earned_kpi=earned_kpi,
         kpi_data_calculated=kpi_data_calculated
     )
 

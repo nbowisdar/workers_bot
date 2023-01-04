@@ -31,14 +31,14 @@ def extract_kpi_data(text_json: str) -> str:
 
 text_json = str
 'get value in format {field1->20 field2->80}'
-def pars_kpi_data(text: str, check_100_percent=False) -> text_json:
+def pars_kpi_data(text: str, check_30_percent=False) -> text_json:
     rez = {}
     fields = text.split(" ")
     for f in fields:
         key, value = f.split("->")
         rez[key] = int(value)
-    if check_100_percent:
-        if sum([p for p in rez.values()]) != 100:
+    if check_30_percent:
+        if sum([p for p in rez.values()]) != 30:
             raise ValueError("Повинно бути 100%!")
     return json.dumps(rez, ensure_ascii=False).encode("utf8").decode()
 
