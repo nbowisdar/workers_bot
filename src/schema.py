@@ -5,7 +5,8 @@ from aiogram.types import ReplyKeyboardMarkup
 class WithWage(TypedDict):
     worker_id: int
     full_name: str
-    skills: str
+    skill: float
+    kpi: dict
 
 
 class ShiftModel(WithWage):
@@ -36,6 +37,8 @@ class CalcModel(TypedDict):
 class ShiftsData(WithWage):
     date: str
     calculated_data: CalcModel
+    wage_day: float
+    wage_night: float
     # kpi_data_calculated: str
 
 

@@ -182,8 +182,9 @@ def _calc_kpi_part(s: int, shift: WorkShift, pos: Position) -> float:
     pos_kpi = list(json.loads(pos.kpi_data).values())
     shift_kpi = list(json.loads(shift.kpi_data).values())
     result = 0
+    s = s / 100 * pos.kpi
     for i in range(len(pos_kpi)):
-        result += (s / 100 * pos_kpi[i]) * (s / 100 * shift_kpi[i])
+        result += (s / 100 * pos_kpi[i]) / 100 * shift_kpi[i]
     return round(result, 2)
 
 
@@ -192,17 +193,18 @@ def _update_kpi(kpi_data: dict, shifts: list[WorkShift]) -> dict:
     result = {}
     count_shift = 0
     for shift in shifts:
-        kpi_cur = json.loads(shift.position.kpi_data)
+        kpi_cur = json.loads(shift.kpi_data)
         for key in kpi_keys:
-            result[key] += kpi_cur[key]
+            prev = result.get(key, 0)
+            result[key] = prev + kpi_cur[key]
 
         count_shift += 1
-    for k, v in result:
+    for k, v in result.items():
         result[k] = round(v/count_shift, 2)
     return result
 
 
-def _calculate_shifts_data(shifts: list[WorkShift], worker: Worker) -> CalcModel:
+def _calculate_shifts_data(*, shifts: list[WorkShift], worker: Worker) -> CalcModel:
     earned = 0
     all_days_h = 0
     all_earned_day = 0
@@ -213,15 +215,15 @@ def _calculate_shifts_data(shifts: list[WorkShift], worker: Worker) -> CalcModel
     wg_n = worker.position.wage_night
     kpi_data_calculated = _update_kpi(json.loads(worker.position.kpi_data), shifts)
     for shift in shifts:
-        earned_day = shift.day_hours * (wg_d+(wg_d*skill))
-        earned_night = shift.night_hours * (wg_n+(wg_n*skill))
+        earned_day = shift.day_hours * (wg_d+(wg_d/100*skill))
+        earned_night = shift.night_hours * (wg_n+(wg_n/100*skill))
         s = earned_day + earned_night
-        earned += (s * 70 / 100) + _calc_kpi_part(s, shift.kpi_data, worker.position)  # (s * 30 / 100 * kpi) # / 100
+        earned += (s * 70 / 100) + _calc_kpi_part(s, shift, worker.position)  # (s * 30 / 100 * kpi) # / 100
         all_days_h += shift.day_hours
         all_night_h += shift.night_hours
         all_earned_day += earned_day
         all_earned_night += earned_night
-
+    print(earned)
     return CalcModel(
         all_days_hours=all_days_h,
         all_night_hours=all_night_h,
@@ -241,15 +243,16 @@ def get_wage_data_by_month(data: YearMonth, month: str) -> ShiftsData:
 
     shifts = worker.shifts.where((WorkShift.date >= start_date) &
                                  (WorkShift.date <= up_to_date))
-    # all_day, all_night = _calculate_hours(shifts)
-    # earned = _calc_all_earned(shifts, worker)
     return ShiftsData(
         worker_id=worker.worker_id,
         full_name=f"{worker.name} {worker.surname}",
-        skills=worker.skill,
+        skill=worker.skill,
+        wage_day=worker.position.wage_day,
+        wage_night=worker.position.wage_night,
         date=month,
-        calculated_data=_calculate_shifts_data(worker, shifts)
-        )  # TODO not ended
+        kpi=json.loads(worker.position.kpi_data),
+        calculated_data=_calculate_shifts_data(worker=worker, shifts=shifts)
+        )
 
 
 def get_workers_kpi(worker_id: int) -> str:

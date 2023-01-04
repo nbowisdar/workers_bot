@@ -49,7 +49,8 @@ def create_db():
 
 
 if __name__ == '__main__':
-    x = Worker.select()
-    for i in x:
-        print(i)
+    x = Worker.get(worker_id=286365412)
+    print(x.employment_date)
+    print(x.skill)
+
 
