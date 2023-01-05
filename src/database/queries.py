@@ -1,9 +1,11 @@
 import json
+from typing import NamedTuple
 
 from dateutil.relativedelta import relativedelta
 
 from src.database.tables import db, Worker, WorkShift, Position
-from src.schema import UserModel, ShiftModel, TimePerModel, YearMonth, PositionModel, Shifts, ShiftsData, CalcModel
+from src.schema import UserModel, ShiftModel, TimePerModel, YearMonth, PositionModel, Shifts, ShiftsData, CalcModel, \
+    TwoDates
 from src.my_logger import logger
 from datetime import datetime
 
@@ -139,7 +141,7 @@ def get_one_shift(worker_id: int, date: str) -> ShiftModel | None:
 
         earned=(shift.day_hours * worker.wage_day + shift.night_hours * worker.wage_night) * 70 / 100 + (
                 shift.day_hours * worker.wage_day + shift.night_hours * worker.wage_night) * worker.kpi / 100 * 30 / 100 + (
-                shift.day_hours * worker.wage_day + shift.night_hours * worker.wage_night) * 5 / 100 * worker.skill,
+                       shift.day_hours * worker.wage_day + shift.night_hours * worker.wage_night) * 5 / 100 * worker.skill,
         # qwe=100
     )
 
@@ -172,7 +174,7 @@ def _calc_kpi_part(s: int, shift: WorkShift, pos: Position) -> float:
     pos_kpi = list(json.loads(pos.kpi_data).values())
     shift_kpi = list(json.loads(shift.kpi_data).values())
     result = 0
-    #s = s / 100 * pos.kpi
+    # s = s / 100 * pos.kpi
     for i in range(len(pos_kpi)):
         # result += ()
         result += (s / 100 * pos_kpi[i]) / 100 * shift_kpi[i]
@@ -193,13 +195,13 @@ def _update_kpi(kpi_data: dict, shifts: list[WorkShift]) -> dict:
             result[key] = prev + kpi_cur[key] * cur_hours
 
     for k, v in result.items():
-        result[k] = round(v/all_hours, 2)
+        result[k] = round(v / all_hours, 2)
     return result
 
 
 def _calculate_shifts_data(*, shifts: list[WorkShift], worker: Worker) -> CalcModel:
     earned = 0
-    earned_stable= 0
+    earned_stable = 0
     earned_kpi = 0
     all_days_h = 0
     all_earned_day = 0
@@ -210,8 +212,8 @@ def _calculate_shifts_data(*, shifts: list[WorkShift], worker: Worker) -> CalcMo
     wg_n = worker.position.wage_night
     kpi_data_calculated = _update_kpi(json.loads(worker.position.kpi_data), shifts)
     for shift in shifts:
-        earned_day = shift.day_hours * (wg_d+(wg_d/100*skill))
-        earned_night = shift.night_hours * (wg_n+(wg_n/100*skill))
+        earned_day = shift.day_hours * (wg_d + (wg_d / 100 * skill))
+        earned_night = shift.night_hours * (wg_n + (wg_n / 100 * skill))
         s = earned_day + earned_night
         earned_stable += s * 70 / 100
         earned_kpi += _calc_kpi_part(s, shift, worker.position)
@@ -232,33 +234,45 @@ def _calculate_shifts_data(*, shifts: list[WorkShift], worker: Worker) -> CalcMo
     )
 
 
-def get_wage_data_by_month(data: YearMonth, month: str) -> ShiftsData:
+def _get_shifts_by_date(data: TwoDates, worker: Worker) -> list[WorkShift]:
+    return worker.shifts.where((WorkShift.date >= data.start_date) &
+                               (WorkShift.date <= data.up_to_date))
+
+
+def build_two_dates(data: YearMonth) -> TwoDates:
+    start_date = datetime.strptime(f"{data.year}/{data.month}/01", "%Y/%m/%d")
+    return TwoDates(
+        start_date=start_date,
+        up_to_date=start_date + relativedelta(day=31),
+        worker_id=data.worker_id
+    )
+
+
+def get_wage_data_by_month(data: TwoDates, when: str) -> ShiftsData:
     worker = Worker.get_or_none(worker_id=data.worker_id)
     if not worker:
         raise Exception("User doesnt exist")
-    start_date = datetime.strptime(f"{data.year}/{data.month}/01", "%Y/%m/%d")
-    up_to_date = start_date + relativedelta(day=31)
+    # start_date = datetime.strptime(f"{data.year}/{data.month}/01", "%Y/%m/%d")
+    # up_to_date = start_date + relativedelta(day=31)
 
-    shifts = worker.shifts.where((WorkShift.date >= start_date) &
-                                 (WorkShift.date <= up_to_date))
+    # shifts = worker.shifts.where((WorkShift.date >= start_date) &
+    #                              (WorkShift.date <= up_to_date))
+    shifts = _get_shifts_by_date(data, worker)
     return ShiftsData(
         worker_id=worker.worker_id,
         full_name=f"{worker.name} {worker.surname}",
         skill=worker.skill,
         wage_day=worker.position.wage_day,
         wage_night=worker.position.wage_night,
-        date=month,
+        date=when,
         kpi=json.loads(worker.position.kpi_data),
         calculated_data=_calculate_shifts_data(worker=worker, shifts=shifts)
-        )
+    )
 
 
 def get_workers_kpi(worker_id: int) -> str:
     worker = Worker.get(worker_id=worker_id)
     return worker.position.kpi_data
-
-
-
 
 
 if __name__ == '__main__':

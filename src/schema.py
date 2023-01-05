@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TypedDict, NamedTuple
 from aiogram.types import ReplyKeyboardMarkup
 
@@ -75,8 +76,8 @@ class TimePerModel(NamedTuple):
     is_admin: bool
     worker_id: int
     reply_btn: ReplyKeyboardMarkup
-    time_start: str
-    time_finish: str
+    time_start: datetime
+    time_finish: datetime
 
 
 class WorkerAndBtn(NamedTuple):
@@ -89,3 +90,10 @@ class YearMonth(NamedTuple):
     worker_id: int
     year: str
     month: str
+
+
+class TwoDates(NamedTuple):
+    worker_id: int
+    start_date: datetime
+    up_to_date: datetime
+

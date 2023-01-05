@@ -1,19 +1,19 @@
-# from datetime import datetime, date
-# from pprint import pprint
-#
-# from src.my_logger import logger
-# from aiogram.filters import Command
-# from aiogram.fsm.state import State, StatesGroup
-# from aiogram.fsm.context import FSMContext
-# from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
-# from src.database import get_shifts, ShiftModel
-# from src.schema import PluralShifts, TimePerModel
-# from src.telegram.keyboards import until_kb, user_main_kb, today_btn, admin_kb_main
-# from src.telegram.messages import message_about_plural_shifts
-# from src.telegram.setup import common_router
-# from aiogram3_calendar import SimpleCalendar, simple_cal_callback
-#
-#
+from datetime import datetime, date
+from pprint import pprint
+
+from src.my_logger import logger
+from aiogram.filters import Command
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
+from src.database import get_shifts, ShiftModel, get_wage_data_by_month
+from src.schema import TimePerModel, TwoDates
+from src.telegram.keyboards import until_kb, user_main_kb, today_btn, admin_kb_main
+from src.telegram.messages import build_month_wage_message
+from src.telegram.setup import common_router
+from aiogram3_calendar import SimpleCalendar, simple_cal_callback
+
+
 # def calculate_stat(shifts: list[ShiftModel]) -> PluralShifts:
 #     all_days_hours = 0
 #     all_nights_hours = 0
@@ -33,77 +33,83 @@
 #         date_from=shifts[0]['date'],
 #         date_to=shifts[-1]['date']
 #     )
-#
-#
-# class TimePer(StatesGroup):
-#     is_admin = State()
-#     worker_id = State()
-#     reply_btn = State()
-#     time_start = State()
-#     time_finish = State()
-#
-#
-# @common_router.message(TimePer.worker_id)
-# async def is_admin_or_user(message: Message, state: FSMContext):
-#     try:
-#         worker_id = int(message.text)
-#         await state.update_data(worker_id=worker_id)
-#         await state.set_state(TimePer.time_start)
-#         await message.reply("Вкажіть початкову дату:date = State()\n"
-#                             "Введіть дату у наступному форматі: \n"
-#                             "*Рік/Місяць/День* \n"
-#                             "Приклад: `2015/10/20`",
-#                             reply_markup=ReplyKeyboardRemove(),
-#                             parse_mode="MARKDOWN")
-#     except ValueError:
-#         await message.reply("Повинно бути число!",
-#                             reply_markup=admin_kb_main)
-#         await state.clear()
-#
-#
-# @common_router.message(TimePer.time_start)
-# async def from_time(message: Message, state: FSMContext):
-#     try:
-#         cur_date = datetime.strptime(message.text, "%Y/%m/%d").date()
-#         await state.update_data(time_start=cur_date)
-#         await state.set_state(TimePer.time_finish)
-#         await message.reply("По яку дату потрібна інформація?",
-#                             reply_markup=today_btn)
-#     except Exception as err:
-#         logger.error(err)
-#         data = await state.get_data()
-#         await state.clear()
-#         await message.reply("Не вірний формат!",
-#                             reply_markup=data["reply_btn"])
-#
-#
-# @common_router.message(TimePer.time_finish)
-# async def set_until_time(message: Message, state: FSMContext):
-#     data = await state.get_data()
-#     try:
-#         if message.text == "Сьогоднішня дата":
-#             cur_date = date.today()
-#         else:
-#             cur_date = datetime.strptime(message.text, "%Y/%m/%d").date()
-#         await state.update_data(time_finish=cur_date)
-#         data = await state.get_data()
-#         await show_results(message, data)
-#     except Exception as err:
-#         logger.error(err)
-#         await message.reply("Не вірний формат!",
-#                             reply_markup=data["reply_btn"])
-#     finally:
-#         await state.clear()
-#
-#
-# async def show_results(message: Message, data: dict):
-#     struct_data = TimePerModel(**data)
-#     all_shifts = get_shifts(struct_data)
-#     if not all_shifts:
-#         await message.answer("Немає данних про вас", reply_markup=data['reply_btn'])
-#         return
-#     info = calculate_stat(all_shifts)
-#     msg = message_about_plural_shifts(info)
-#     await message.answer(msg,
-#                          reply_markup=data['reply_btn'],
-#                          parse_mode="MARKDOWN")
+
+
+class TimePer(StatesGroup):
+    is_admin = State()
+    worker_id = State()
+    reply_btn = State()
+    time_start = State()
+    time_finish = State()
+
+
+@common_router.message(TimePer.worker_id)
+async def is_admin_or_user(message: Message, state: FSMContext):
+    try:
+        worker_id = int(message.text)
+        await state.update_data(worker_id=worker_id)
+        await state.set_state(TimePer.time_start)
+        await message.reply("Вкажіть початкову дату:date = State()\n"
+                            "Введіть дату у наступному форматі: \n"
+                            "*Рік/Місяць/День* \n"
+                            "Приклад: `2015/10/20`",
+                            reply_markup=ReplyKeyboardRemove(),
+                            parse_mode="MARKDOWN")
+    except ValueError:
+        await message.reply("Повинно бути число!",
+                            reply_markup=admin_kb_main)
+        await state.clear()
+
+
+@common_router.message(TimePer.time_start)
+async def from_time(message: Message, state: FSMContext):
+    try:
+        cur_date = datetime.strptime(message.text, "%Y/%m/%d")  # .date()
+        await state.update_data(time_start=cur_date)
+        await state.set_state(TimePer.time_finish)
+        await message.reply("По яку дату потрібна інформація?",
+                            reply_markup=today_btn)
+    except Exception as err:
+        logger.error(err)
+        data = await state.get_data()
+        await state.clear()
+        await message.reply("Не вірний формат!",
+                            reply_markup=data["reply_btn"])
+
+
+@common_router.message(TimePer.time_finish)
+async def set_until_time(message: Message, state: FSMContext):
+    data = await state.get_data()
+    try:
+        if message.text == "Сьогоднішня дата":
+            cur_date = date.today()
+        else:
+            cur_date = datetime.strptime(message.text, "%Y/%m/%d")
+        await state.update_data(time_finish=cur_date)
+        data = await state.get_data()
+        await show_results(message, data)
+    except Exception as err:
+        logger.error(err)
+        await message.reply("Не вірний формат!",
+                            reply_markup=data["reply_btn"])
+    finally:
+        await state.clear()
+
+
+async def show_results(message: Message, data: dict):
+    struct_data = TimePerModel(**data)
+    norm_data = TwoDates(
+        start_date=struct_data.time_start,
+        up_to_date=struct_data.time_finish,
+        worker_id=struct_data.worker_id
+    )
+    when = f"{str(norm_data.start_date.date())} - {str(norm_data.up_to_date.date())}"
+    # all_shifts = get_shifts(struct_data)
+    # if not all_shifts:
+    #     await message.answer("Немає данних про вас", reply_markup=data['reply_btn'])
+    #     return
+    info = get_wage_data_by_month(norm_data, when)
+    msg = build_month_wage_message(info)
+    await message.answer(msg,
+                         reply_markup=data['reply_btn'],
+                         parse_mode="MARKDOWN")

@@ -41,7 +41,7 @@ class WorkShift(BaseModel):
     day_hours = FloatField()
     night_hours = FloatField()
     kpi_data = CharField()
-    date = DateField(unique=True)
+    date = DateField()
 
 
 def create_db():
